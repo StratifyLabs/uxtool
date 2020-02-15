@@ -1,0 +1,20 @@
+
+set(SOURCES
+	main.cpp
+	FontObject.cpp
+	FontObject.hpp
+	SvgFontManager.cpp
+	SvgFontManager.hpp
+	ConvertManager.hpp
+	ConvertManager.cpp
+	ThemeManager.cpp
+	ThemeManager.hpp
+	IconGenerator.cpp
+	IconGenerator.hpp
+	BmpFontGenerator.cpp
+	BmpFontGenerator.hpp
+	ApplicationPrinter.cpp
+	ApplicationPrinter.hpp
+	Util.cpp
+	Util.hpp
+	PARENT_SCOPE)
