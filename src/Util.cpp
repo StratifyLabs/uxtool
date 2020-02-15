@@ -140,8 +140,10 @@ void Util::show_icon_file(
 		Palette bmp_pallete;
 
 		bmp_pallete
-				.set_bits_per_pixel(bits_per_pixel)
-				.fill_gradient_gray();
+				.set_color_count(
+					Palette::get_color_count(bits_per_pixel)
+					)
+				.fill_gradient(PaletteColor(0xffffffff));
 
 
 		fmt::Bmp::save(
@@ -322,7 +324,11 @@ void Util::show_file_font(
 		Bmp::save(
 					output_file.argument(),
 					output_bitmap,
-					Palette().set_bits_per_pixel(bpp.argument()).fill_gradient_gray()
+					Palette()
+					.set_color_count(
+						Palette::get_color_count(bpp.argument())
+						)
+					.fill_gradient(PaletteColor(0xffffffff))
 					);
 
 	}

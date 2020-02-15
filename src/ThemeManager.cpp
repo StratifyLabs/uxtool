@@ -4,7 +4,7 @@
 ThemeColors::ThemeColors(
 		const var::String & name,
 		const var::JsonObject & object,
-		const theme_color_t & background_color
+		const PaletteColor & background_color
 		){
 
 	set_background(background_color);
@@ -13,45 +13,26 @@ ThemeColors::ThemeColors(
 	if( name.find("outline") != String::npos ){
 		m_is_outline = true;
 		set_border(
-					import_hex_code(
-						object.at("color").to_string()
-						)
+					PaletteColor(object.at("color").to_string())
 					);
 		set_color(
 					background_color
 					);
 		set_text(
-					import_hex_code(
-						object.at("color").to_string()
-						)
+					PaletteColor(object.at("color").to_string())
 					);
 	} else {
 
 		set_border(
-					import_hex_code(object.at("border").to_string())
+					PaletteColor(object.at("border").to_string())
 					);
 		set_color(
-					import_hex_code(object.at("color").to_string())
+					PaletteColor(object.at("color").to_string())
 					);
 		set_text(
-					import_hex_code(object.at("text").to_string())
+					PaletteColor(object.at("text").to_string())
 					);
 	}
-}
-
-ThemeColors::theme_color_t ThemeColors::import_hex_code(
-		const var::String & hex
-		){
-	theme_color_t result = {0};
-
-	if( hex.length() != 7 ){
-		return result;
-	}
-	result.red = hex.create_sub_string(String::Position(1), String::Length(2)).to_unsigned_long(String::base_16);
-	result.green = hex.create_sub_string(String::Position(3), String::Length(2)).to_unsigned_long(String::base_16);
-	result.blue = hex.create_sub_string(String::Position(5), String::Length(2)).to_unsigned_long(String::base_16);
-
-	return result;
 }
 
 ThemeColors ThemeColors::highlight() const {
@@ -67,59 +48,77 @@ ThemeColors ThemeColors::disable() const {
 	return result;
 }
 
-var::Vector<ThemeColors::theme_color_t>
-ThemeColors::create_palette_colors(
+Palette ThemeColors::create_palette(
+		const String & pixel_format,
 		u8 bits_per_pixel
 		) const {
 
-	var::Vector<theme_color_t> result( 1<<bits_per_pixel );
+	Palette result;
+
+	result.set_color_count(
+				Palette::get_color_count(bits_per_pixel)
+				);
+
+	result.set_pixel_format(
+				Palette::decode_pixel_format(pixel_format)
+				);
+
+	if( result.is_valid() == false ){
+		printer().error(
+					"failed to create palette with pixel format: " +
+					pixel_format +
+					" and bits per pixel:" +
+					String::number(bits_per_pixel)
+					);
+		return Palette();
+	}
 
 	if( bits_per_pixel == 1 ){
-		result.at(0) = m_color;
-		result.at(1) = m_text;
+		result.assign_color(0, m_color);
+		result.assign_color(1, m_text);
 	} else if( bits_per_pixel == 2 ){
-		result.at(0) = m_background;
-		result.at(1) = m_color;
-		result.at(2) = m_text;
-		result.at(3) = m_border;
+		result.assign_color(0, m_background);
+		result.assign_color(1, m_color);
+		result.assign_color(2, m_text);
+		result.assign_color(3, m_border);
 	} else {
-		result.at(0) = m_background;
-		size_t blend_count = result.count()-2;
-		for(size_t i=0; i < blend_count; i++){
-			theme_color_t color;
-			u32 tmp = (m_color.red * (blend_count - i) + m_text.red * i + blend_count) / (2*blend_count);
-			color.red = tmp;
-			tmp = (m_color.green * (blend_count - i) + m_text.green * i + blend_count) / (2*blend_count);
-			color.green = tmp;
-			tmp = (m_color.blue * (blend_count - i) + m_text.blue * i + blend_count) / (2*blend_count);
-			color.blue = tmp;
-		}
+		result.assign_color(0, m_background);
+		enum Palette::color_count color_count = Palette::get_color_count( bits_per_pixel );
 
-		result.at(blend_count + 1) = m_border;
+		const size_t blend_count = color_count - 2;
+		var::Vector<PaletteColor> gradient =
+				PaletteColor::calculate_gradient(
+					m_color,
+					m_text,
+					blend_count
+					);
+
+		for(size_t i=0; i < gradient.count(); i++){
+			printer().debug("gradient color is " + gradient.at(i).to_hex_code());
+			result.assign_color(i+1, gradient.at(i));
+			printer().debug(
+						"gradient result is " +
+						PaletteColor(result.colors().at(i+1)).to_hex_code()
+						);
+		}
+		result.assign_color(color_count - 1, m_border);
 	}
 	return result;
 }
 
-ThemeColors::theme_color_t ThemeColors::calculate_highlighted(
-		const theme_color_t & color
+PaletteColor ThemeColors::calculate_highlighted(
+		const PaletteColor& color
 		) const{
-	theme_color_t result;
-	result.red = color.red / 4;
-	result.green = color.green / 4;
-	result.blue = color.blue / 4;
-	return result;
+	return color * 0.5f;
 }
 
-ThemeColors::theme_color_t ThemeColors::calculate_disabled(const theme_color_t & color) const{
-	theme_color_t result;
-	result.red = 255 - color.red / 4;
-	result.green = 255 - color.green / 4;
-	result.blue = 255 - color.blue / 4;
-	return result;
+PaletteColor ThemeColors::calculate_disabled(
+		const PaletteColor & color
+		) const{
+	return color * 1.25f;
 }
 
-ThemeManager::ThemeManager() : m_theme(m_theme_file)
-{
+ThemeManager::ThemeManager() : m_theme(m_theme_file){
 
 }
 
@@ -291,15 +290,19 @@ int ThemeManager::import_object(
 				output_path,
 				fs::File::IsOverwrite(true),
 				Theme::BitsPerPixel(bits_per_pixel),
-				Theme::PixelFormat(0)
+				Palette::decode_pixel_format(pixel_format)
 				) < 0 ){
 		printer().error("failed to save theme to " + output_path);
 		return -1;
 	}
 
-	theme_color_t background_color =
-			ThemeColors::import_hex_code(
+	PaletteColor background_color(
 				input.at("background").to_string()
+				);
+
+	printer().debug(
+				"background color is " +
+				background_color.to_hex_code()
 				);
 
 	for(const auto & style: get_styles() ){
@@ -317,10 +320,16 @@ int ThemeManager::import_object(
 					background_color
 					);
 
+		printer().message("background is " + theme_colors.background().to_hex_code());
+		printer().message("color is " + theme_colors.color().to_hex_code());
+		printer().message("text is " + theme_colors.text().to_hex_code());
+		printer().message("border is " + theme_colors.border().to_hex_code());
+
 		set_color(
 					get_theme_style(style),
 					Theme::state_default,
 					theme_colors,
+					pixel_format,
 					bits_per_pixel
 					);
 
@@ -328,6 +337,7 @@ int ThemeManager::import_object(
 					get_theme_style(style),
 					Theme::state_highlighted,
 					theme_colors.highlight(),
+					pixel_format,
 					bits_per_pixel
 					);
 
@@ -335,6 +345,7 @@ int ThemeManager::import_object(
 					get_theme_style(style),
 					Theme::state_disabled,
 					theme_colors.disable(),
+					pixel_format,
 					bits_per_pixel
 					);
 
@@ -351,37 +362,29 @@ void ThemeManager::set_color(
 		enum Theme::style style,
 		enum Theme::state state,
 		const ThemeColors & base_colors,
+		const String & pixel_format,
 		u8 bits_per_pixel){
 
-	var::Vector<ThemeColors::theme_color_t> colors =
-			base_colors.create_palette_colors(bits_per_pixel);
-	var::Vector<u16> colors_rgb;
+	Palette palette = base_colors.create_palette(
+				pixel_format,
+				bits_per_pixel
+				);
 
-	//output format RGB565??
-	for(const auto & color: colors){
-		colors_rgb.push_back(ThemeColors::rgb565(color));
+	printer().open_array(
+				"palette " +
+				get_style_name(style) +
+				" " +
+				get_state_name(state),
+				Printer::level_message
+				);
+	for(const auto & color: palette.colors()){
+		printer() << PaletteColor(color).to_hex_code();
 	}
-	m_theme_file.write(colors_rgb);
+	printer().close_array();
+
+
+	m_theme_file.write(palette.colors());
 
 }
 
-u16 ThemeManager::mix(
-		const theme_color_t & first,
-		const theme_color_t & second){
-	//first has 66% weigth, second has 33% weight
-	u32 red = (first.red * 666 + second.red * 333 + 500)/1000;
-	u32 green = (first.green * 666 + second.green * 333 + 500)/1000;
-	u32 blue = (first.blue * 666 + second.blue * 333 + 500)/1000;
-	u16 rgb = (red & 0xf8) << 8;
-	rgb |= (green & 0xfc) << 3;
-	rgb |= (blue & 0xf8) >> 3;
-	printer().debug(
-				String().format("mix %02X %02X %02X + %02X %02X %02X = %02X %02X %02X = 0x%04X",
-												first.red, first.green, first.blue,
-												second.red, second.green, second.blue,
-												red, green, blue,
-												rgb
-												));
-	return rgb;
-}
 

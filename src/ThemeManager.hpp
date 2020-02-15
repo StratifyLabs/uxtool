@@ -7,7 +7,7 @@
 
 #include "ApplicationPrinter.hpp"
 
-class ThemeFlags {
+class ThemeFlags : public ApplicationPrinter {
 public:
 	typedef struct {
 		u8 red;
@@ -23,56 +23,66 @@ public:
 	ThemeColors(
 			const var::String & name,
 			const var::JsonObject & object,
-			const theme_color_t & background_color
+			const PaletteColor & background_color
 			);
 
-	ThemeColors& set_background(const theme_color_t & value){
+	ThemeColors& set_background(const PaletteColor & value){
 		m_background = value;
 		return *this;
 	}
 
-	ThemeColors& set_color(const theme_color_t & value){
+	ThemeColors& set_color(const PaletteColor & value){
 		m_color = value;
 		return *this;
 	}
 
-	ThemeColors& set_text(const theme_color_t & value){
+	ThemeColors& set_text(const PaletteColor & value){
 		m_text = value;
 		return *this;
 	}
 
-	ThemeColors& set_border(const theme_color_t & value){
+	ThemeColors& set_border(const PaletteColor & value){
 		m_border = value;
 		return *this;
 	}
 
-	ThemeColors highlight() const;
-	ThemeColors disable() const;
-	var::Vector<theme_color_t> create_palette_colors(u8 bits_per_pixel) const;
-
-	static theme_color_t import_hex_code(const var::String & hex);
-
-	static u16 rgb565(const theme_color_t & color){
-		u16 rgb = (color.red & 0xf8) << 8;
-		rgb |= (color.green & 0xfc) << 3;
-		rgb |= (color.blue & 0xf8) >> 3;
-		return rgb;
+	const PaletteColor & background() const {
+		return m_background;
 	}
 
+	const PaletteColor & border() const {
+		return m_border;
+	}
+
+	const PaletteColor & color() const {
+		return m_color;
+	}
+
+	const PaletteColor & text() const {
+		return m_text;
+	}
+
+	ThemeColors highlight() const;
+	ThemeColors disable() const;
+	Palette create_palette(
+			const String& pixel_format,
+			u8 bits_per_pixel
+			) const;
+
 private:
-	theme_color_t m_background;
-	theme_color_t m_color;
-	theme_color_t m_text;
-	theme_color_t m_border;
+	PaletteColor m_background;
+	PaletteColor m_color;
+	PaletteColor m_text;
+	PaletteColor m_border;
 	bool m_is_outline;
 
 
-	theme_color_t calculate_highlighted(const theme_color_t & color) const;
-	theme_color_t calculate_disabled(const theme_color_t & color) const;
+	PaletteColor calculate_highlighted(const PaletteColor & color) const;
+	PaletteColor calculate_disabled(const PaletteColor& color) const;
 
 };
 
-class ThemeManager : public ApplicationPrinter, public ThemeFlags {
+class ThemeManager : public ThemeFlags {
 public:
 	ThemeManager();
 
@@ -112,11 +122,13 @@ private:
 	theme_color_t calculate_highlighted(const theme_color_t & color);
 	theme_color_t calculate_disabled(const theme_color_t & color);
 
-	void set_color(enum Theme::style style,
-								 enum Theme::state state,
-								 const ThemeColors& base_colors,
-								 u8 bits_per_pixel
-								 );
+	void set_color(
+			enum Theme::style style,
+			enum Theme::state state,
+			const ThemeColors& base_colors,
+			const String& pixel_format,
+			u8 bits_per_pixel
+			);
 
 	enum sgfx::Theme::style get_theme_style(const var::String & style_name);
 	var::String get_style_name(enum Theme::style value);
