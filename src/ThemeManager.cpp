@@ -44,7 +44,8 @@ ThemeColors ThemeColors::highlight() const {
 
 ThemeColors ThemeColors::disable() const {
 	ThemeColors result(*this);
-
+	result.m_background = m_background;
+	result.m_color = calculate_disabled(m_color);
 	return result;
 }
 
@@ -109,13 +110,13 @@ Palette ThemeColors::create_palette(
 PaletteColor ThemeColors::calculate_highlighted(
 		const PaletteColor& color
 		) const{
-	return color * 0.5f;
+	return color * 0.75f;
 }
 
 PaletteColor ThemeColors::calculate_disabled(
 		const PaletteColor & color
 		) const{
-	return color * 1.25f;
+	return color * 1.75f;
 }
 
 ThemeManager::ThemeManager() : m_theme(m_theme_file){

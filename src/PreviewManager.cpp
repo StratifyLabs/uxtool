@@ -200,6 +200,10 @@ void PreviewManager::generate_theme_preview(
 		return;
 	}
 
+	font_info.font()->set_space_size(
+				font_info.point_size() / 4
+				);
+
 	theme.load(theme_path);
 
 	var::Vector<Bitmap> bitmap_list;
