@@ -1,7 +1,7 @@
 #ifndef BMPFONTGENERATOR_HPP
 #define BMPFONTGENERATOR_HPP
 
-#include "FontObject.hpp"
+#include "Object.hpp"
 
 class BmpFontGeneratorCharacter {
 public:
@@ -42,7 +42,7 @@ private:
 	sg_font_char_t m_font_character;
 };
 
-class BmpFontGenerator : public FontObject {
+class BmpFontGenerator : public Object {
 public:
 	BmpFontGenerator();
 

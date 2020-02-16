@@ -10,6 +10,7 @@
 #include "SvgFontManager.hpp"
 #include "ConvertManager.hpp"
 #include "ThemeManager.hpp"
+#include "PreviewManager.hpp"
 #include "ApplicationPrinter.hpp"
 
 void process_batch(const var::String & path);
@@ -404,6 +405,12 @@ void process_batch(const var::String & path){
 	theme_manager.import(
 				fs::File::SourcePath(input_json_path),
 				fs::File::DestinationPath(output_path)
+				);
+
+	PreviewManager preview_manager;
+
+	preview_manager.generate(
+				fs::File::SourcePath(input_json_path)
 				);
 
 }

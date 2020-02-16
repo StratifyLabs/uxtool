@@ -1,14 +1,16 @@
 
 set(SOURCES
 	main.cpp
-	FontObject.cpp
-	FontObject.hpp
+	Object.cpp
+	Object.hpp
 	SvgFontManager.cpp
 	SvgFontManager.hpp
 	ConvertManager.hpp
 	ConvertManager.cpp
 	ThemeManager.cpp
 	ThemeManager.hpp
+	PreviewManager.cpp
+	PreviewManager.hpp
 	IconGenerator.cpp
 	IconGenerator.hpp
 	BmpFontGenerator.cpp

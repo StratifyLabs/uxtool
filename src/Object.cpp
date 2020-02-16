@@ -1,6 +1,6 @@
-#include "FontObject.hpp"
+#include "Object.hpp"
 
-FontObject::FontObject(){
+Object::Object(){
 	m_bits_per_pixel = 1;
 	m_is_generate_map = false;
 	m_character_set = Font::ascii_character_set();
@@ -8,7 +8,7 @@ FontObject::FontObject(){
 }
 
 
-Region FontObject::find_space_on_canvas(Bitmap & canvas, Area dimensions){
+Region Object::find_space_on_canvas(Bitmap & canvas, Area dimensions){
 	Region region;
 	sg_point_t point;
 

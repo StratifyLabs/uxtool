@@ -1,7 +1,7 @@
 #ifndef ICONGENERATOR_HPP
 #define ICONGENERATOR_HPP
 
-#include "FontObject.hpp"
+#include "Object.hpp"
 
 class IconGeneratorIcon {
 public:
@@ -49,7 +49,7 @@ private:
 };
 
 
-class IconGenerator : public FontObject {
+class IconGenerator : public Object {
 public:
 
 	int generate_icon_file(const String & destination);

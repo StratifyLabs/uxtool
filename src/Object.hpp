@@ -1,5 +1,5 @@
-#ifndef FONTOBJECT_HPP
-#define FONTOBJECT_HPP
+#ifndef OBJECT_HPP
+#define OBJECT_HPP
 
 #include <sapi/var.hpp>
 #include <sapi/sys.hpp>
@@ -9,9 +9,9 @@
 
 #include "ApplicationPrinter.hpp"
 
-class FontObject : public ApplicationPrinter {
+class Object : public ApplicationPrinter {
 public:
-	FontObject();
+	Object();
 
 	void set_generate_map(bool value = true){
 		m_is_generate_map = value;
@@ -51,4 +51,4 @@ private:
 
 };
 
-#endif // FONTOBJECT_HPP
+#endif // OBJECT_HPP

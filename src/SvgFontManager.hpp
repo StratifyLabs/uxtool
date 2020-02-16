@@ -5,7 +5,7 @@
 #define SVGFONTMANAGER_HPP_
 
 
-#include "FontObject.hpp"
+#include "Object.hpp"
 #include "BmpFontGenerator.hpp"
 
 class FillPoint {
@@ -41,7 +41,7 @@ private:
 	Point m_point;
 };
 
-class SvgFontManager : public FontObject {
+class SvgFontManager : public Object {
 public:
 	SvgFontManager();
 

@@ -1,11 +1,11 @@
 #ifndef CONVERTMANAGER_HPP
 #define CONVERTMANAGER_HPP
 
-#include "FontObject.hpp"
+#include "Object.hpp"
 #include "BmpFontGenerator.hpp"
 #include "IconGenerator.hpp"
 
-class ConvertManager : public FontObject {
+class ConvertManager : public Object {
 public:
 	ConvertManager();
 
