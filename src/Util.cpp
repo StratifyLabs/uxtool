@@ -143,7 +143,7 @@ void Util::show_icon_file(
 				.set_color_count(
 					Palette::get_color_count(bits_per_pixel)
 					)
-				.fill_gradient(PaletteColor(0xffffffff));
+				.create_gradient(PaletteColor(0xffffffff));
 
 
 		fmt::Bmp::save(
@@ -183,15 +183,12 @@ void Util::show_file_font(
 		IsDetails is_details
 		){
 
-	FileFont ff;
+	FontInfo font_info(input_file.argument());
 	Ap::printer().info("Show font %s", input_file.argument().cstring());
 
-	if( ff.set_file(input_file.argument()) < 0 ){
-		printf("Failed to open font %s", input_file.argument().cstring());
-		perror("Open failed");
-		return;
-	}
+	font_info.create_font();
 
+	Font & ff = *(font_info.font());
 	show_font(ff, bpp);
 
 	if( is_details.argument() ){
@@ -328,7 +325,7 @@ void Util::show_file_font(
 					.set_color_count(
 						Palette::get_color_count(bpp.argument())
 						)
-					.fill_gradient(PaletteColor(0xffffffff))
+					.create_gradient(PaletteColor(0xffffffff))
 					);
 
 	}

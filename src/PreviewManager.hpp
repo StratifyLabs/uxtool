@@ -36,13 +36,16 @@ private:
 
 
 	Bitmap generate_font_preview(
-			const var::String & font_path,
-			const var::String & theme_path
+			const var::String & font_path
 			);
 
 	Bitmap generate_icon_preview(
-			const var::String & icon_path,
-			const var::String & theme_path
+			const var::String & icon_path
+			);
+
+	void generate_theme_preview(
+			const var::String & theme_path,
+			const var::Vector<var::String> & font_list
 			);
 
 };

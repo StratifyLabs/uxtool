@@ -145,34 +145,11 @@ var::Vector<var::String> ThemeManager::get_styles() const {
 }
 
 var::String ThemeManager::get_style_name(enum Theme::style value){
-	switch(value){
-		case Theme::style_dark: return "dark";
-		case Theme::style_light: return "light";
-		case Theme::style_brand_primary: return "brandPrimary";
-		case Theme::style_brand_secondary: return "brandSecondary";
-		case Theme::style_info: return "info";
-		case Theme::style_success: return "success";
-		case Theme::style_warning: return "warning";
-		case Theme::style_danger: return "danger";
-		case Theme::style_outline_dark: return "outlineDark";
-		case Theme::style_outline_light: return "outlineLight";
-		case Theme::style_outline_brand_primary: return "outlineBrandPrimary";
-		case Theme::style_outline_brand_secondary: return "outlineBrandSecondary";
-		case Theme::style_outline_info: return "outlineInfo";
-		case Theme::style_outline_success: return "outlineSuccess";
-		case Theme::style_outline_warning: return "outlineWarning";
-		case Theme::style_outline_danger: return "outlineDanger";
-	}
-	return "";
+	return Theme::get_style_name(value);
 }
 
 var::String ThemeManager::get_state_name(enum Theme::state value){
-	switch(value){
-		case Theme::state_default: return "default";
-		case Theme::state_disabled: return "disabled";
-		case Theme::state_highlighted: return "highlighted";
-	}
-	return "";
+	return Theme::get_state_name(value);
 }
 
 enum sgfx::Theme::style ThemeManager::get_theme_style(const var::String & style_name){
@@ -383,7 +360,11 @@ void ThemeManager::set_color(
 	printer().close_array();
 
 
-	m_theme_file.write(palette.colors());
+	m_theme.write_palette(
+				style,
+				state,
+				palette.colors()
+				);
 
 }
 
