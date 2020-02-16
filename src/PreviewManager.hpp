@@ -45,7 +45,13 @@ private:
 
 	void generate_theme_preview(
 			const var::String & theme_path,
-			const var::Vector<var::String> & font_list
+			const String& font_path
+			);
+
+	void save_bitmap_list(
+			const var::Vector<Bitmap> list,
+			const var::String path,
+			u8 bpp
 			);
 
 };

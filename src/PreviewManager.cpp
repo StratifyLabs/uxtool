@@ -27,9 +27,16 @@ void PreviewManager::generate(
 		printer().info("icon preview is " + icon_preview_path);
 	}
 
+	String theme_preview_font;
 	String theme_preview_path = configuration.at("themePreview").to_string();
 	if( theme_preview_path.is_empty() == false ){
 		printer().info("theme preview is " + theme_preview_path);
+		theme_preview_font = configuration.at("themePreviewFont").to_string();
+	} else {
+		if( theme_preview_font.is_empty() ){
+			printer().error("must specify `themePreviewFont`");
+			return;
+		}
 	}
 
 	String asset_folder =
@@ -60,7 +67,6 @@ void PreviewManager::generate(
 	}
 
 
-	u32 theme_count = 0;
 	//draw all generated fonts on a bitmap
 	if( font_preview_path.is_empty() == false ){
 		var::Vector<Bitmap> bitmap_list;
@@ -75,53 +81,11 @@ void PreviewManager::generate(
 		}
 
 		//put all the bitmaps on one big bitmap and then generate a BMP file
-		sg_size_t max_width = 0;
-		sg_size_t total_height = 0;
-
-		for(const auto & bitmap: bitmap_list){
-			total_height += bitmap.height();
-			if( bitmap.width() > max_width ){
-				max_width = bitmap.width();
-			}
-		}
-
-		Bitmap all_fonts_bitmap(
-					Area(max_width, total_height),
-					Bitmap::BitsPerPixel(4)
-					);
-
-		u32 y_cursor = 0;
-		printer().message("draw fonts on single bitmap");
-		for(const auto & bitmap: bitmap_list){
-			all_fonts_bitmap.draw_bitmap(
-						Point(0, y_cursor),
-						bitmap
-						);
-
-			y_cursor += bitmap.height();
-		}
-
-
-		Palette palette;
-		palette
-				.set_pixel_format(Palette::pixel_format_rgb888)
-				.set_color_count(Palette::get_color_count(bpp))
-				.create_gradient(PaletteColor("#ffffff"));
-
-		printer().open_array("bmp palette", Printer::level_message);
-		for(u32 i=0; i < palette.colors().count(); i++){
-			printer().message("color is " + palette.palette_color(i).to_hex_code());
-		}
-		printer().close_array();
-
-		printer().message("save bitmap " + font_preview_path);
-
-		Bmp::save(
+		save_bitmap_list(
+					bitmap_list,
 					font_preview_path,
-					all_fonts_bitmap,
-					palette
+					bpp
 					);
-		printer().message("done saving " + font_preview_path);
 	}
 
 	//create preview for icons
@@ -138,62 +102,20 @@ void PreviewManager::generate(
 			printer().close_object();
 		}
 
-		//put all the bitmaps on one big bitmap and then generate a BMP file
-		sg_size_t max_width = 0;
-		sg_size_t total_height = 0;
-
-		for(const auto & bitmap: bitmap_list){
-			total_height += bitmap.height();
-			if( bitmap.width() > max_width ){
-				max_width = bitmap.width();
-			}
-		}
-
-		Bitmap all_fonts_bitmap(
-					Area(max_width, total_height),
-					Bitmap::BitsPerPixel(4)
-					);
-
-		u32 y_cursor = 0;
-		printer().message("draw icons on single bitmap");
-		for(const auto & bitmap: bitmap_list){
-			all_fonts_bitmap.draw_bitmap(
-						Point(0, y_cursor),
-						bitmap
-						);
-
-			y_cursor += bitmap.height();
-		}
-
-
-		Palette palette;
-		palette
-				.set_pixel_format(Palette::pixel_format_rgb888)
-				.set_color_count(Palette::get_color_count(bpp))
-				.create_gradient(PaletteColor("#ffffff"));
-
-		printer().open_array("bmp palette", Printer::level_message);
-		for(u32 i=0; i < palette.colors().count(); i++){
-			printer().message("color is " + palette.palette_color(i).to_hex_code());
-		}
-		printer().close_array();
-
-		printer().message("save bitmap " + icon_preview_path);
-
-		Bmp::save(
+		save_bitmap_list(
+					bitmap_list,
 					icon_preview_path,
-					all_fonts_bitmap,
-					palette
+					bpp
 					);
-		printer().message("done saving " + icon_preview_path);
 	}
 
 	if( theme_preview_path.is_empty() == false ){
 		//generate theme preview
+		printer().info("generate themes using font " + theme_preview_font);
 		for(const auto & file_path: theme_list){
 		generate_theme_preview(
 					file_path,
-					font_list
+					theme_preview_font
 					);
 
 		}
@@ -265,22 +187,28 @@ Bitmap PreviewManager::generate_icon_preview(
 
 void PreviewManager::generate_theme_preview(
 		const var::String & theme_path,
-		const var::Vector<var::String> & font_list
+		const var::String & font_path
 		){
 
 	File theme_file;
 
 	Theme theme(theme_file);
+	FontInfo font_info(font_path);
+	font_info.create_font();
+	if( font_info.is_valid() == false ){
+		printer().error("failed to load font " + font_path);
+		return;
+	}
 
 	theme.load(theme_path);
-	u32 font_idx = 0;
-	for(u8 style = 0; style < Theme::last_style; style++){
 
-		for(u8 state = 0; state < Theme::last_state; state++){
+	var::Vector<Bitmap> bitmap_list;
 
-			FontInfo font_info(font_list.at(font_idx++ % font_list.count()));
+	for(u8 style = 0; style < Theme::last_style+1; style++){
 
-			font_info.create_font();
+		for(u8 state = 0; state < Theme::last_state+1; state++){
+
+
 			enum Theme::style official_style =
 					static_cast<enum Theme::style>(style);
 			enum Theme::state official_state =
@@ -294,7 +222,7 @@ void PreviewManager::generate_theme_preview(
 						font_info.font()->calculate_length(
 							label
 							) + 16,
-						font_info.point_size()*2
+						font_info.point_size()*3/2
 						);
 
 			printer().message("theme has " +
@@ -342,6 +270,7 @@ void PreviewManager::generate_theme_preview(
 					.set_color_count(Palette::get_color_count(theme.bits_per_pixel()))
 					.create_gradient(PaletteColor("#ffffff"));
 
+			bitmap_list.push_back(canvas);
 			printer().info("create " + label);
 			Bmp::save(
 						"tmp/" + label + ".bmp",
@@ -349,9 +278,6 @@ void PreviewManager::generate_theme_preview(
 						theme.palette(official_style, official_state)
 						);
 
-			//printer() << canvas;
-
-			//exit(1);
 		}
 	}
 }
@@ -409,4 +335,53 @@ var::Vector<var::String> PreviewManager::get_file_names(
 	}
 
 	return result;
+}
+
+void PreviewManager::save_bitmap_list(
+		const var::Vector<Bitmap> list,
+		const var::String path,
+		u8 bpp
+		){
+
+	//put all the bitmaps on one big bitmap and then generate a BMP file
+	sg_size_t max_width = 0;
+	sg_size_t total_height = 0;
+
+	for(const auto & bitmap: list){
+		total_height += bitmap.height();
+		if( bitmap.width() > max_width ){
+			max_width = bitmap.width();
+		}
+	}
+
+	Bitmap all_fonts_bitmap(
+				Area(max_width, total_height),
+				Bitmap::BitsPerPixel(bpp)
+				);
+
+	u32 y_cursor = 0;
+	printer().message("draw fonts on single bitmap");
+	for(const auto & bitmap: list){
+		all_fonts_bitmap.draw_bitmap(
+					Point(0, y_cursor),
+					bitmap
+					);
+
+		y_cursor += bitmap.height();
+	}
+
+
+	Palette palette;
+	palette
+			.set_pixel_format(Palette::pixel_format_rgb888)
+			.set_color_count(Palette::get_color_count(bpp))
+			.create_gradient(PaletteColor("#ffffff"));
+
+	printer().message("save bitmap " + path);
+
+	Bmp::save(
+				path,
+				all_fonts_bitmap,
+				palette
+				);
 }
