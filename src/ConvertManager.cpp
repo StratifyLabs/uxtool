@@ -3,6 +3,28 @@
 
 ConvertManager::ConvertManager(){}
 
+bool ConvertManager::convert(const Options & options){
+	set_bits_per_pixel(options.bits_per_pixel().to_integer());
+	set_point_size( options.point_size().to_integer() );
+	set_character_set(options.characters());
+	set_generate_map(options.is_map());
+
+	if( options.input_suffix() == "ttf" || options.input_suffix() == "otf"){
+		process_font(
+					File::SourcePath(options.input()),
+					File::DestinationPath(options.output())
+					);
+		return true;
+	} else if( options.input_suffix() == "svg" || options.is_icon() ){
+		process_icons(
+					File::SourcePath(options.input()),
+					File::DestinationPath(options.output())
+					);
+		return true;
+	}
+	return false;
+}
+
 int ConvertManager::process_icons(
 		File::SourcePath source_file_path,
 		File::DestinationPath destination_file_path
@@ -26,7 +48,7 @@ int ConvertManager::process_icons(
 
 	m_icon_generator.set_bits_per_pixel( bits_per_pixel() );
 
-	Vector<String> input_list;
+	var::Vector<String> input_list;
 
 	if( input_info.is_file() ){
 		input_list.push_back(input_path);
@@ -116,7 +138,7 @@ int ConvertManager::generate_icon_bitmap(const var::String & path){
 	{
 		String view_box_string = svg_object.at("@viewBox").to_string();
 		printer().debug("view box string is " + view_box_string);
-		Vector<String> view_box_elements = view_box_string.split(" ");
+		var::Vector<String> view_box_elements = view_box_string.split(" ");
 		if(view_box_elements.count() != 4 ){
 			printer().error("bad view box count %d", view_box_elements.count());
 			return -1;

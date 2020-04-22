@@ -3,6 +3,8 @@ set(SOURCES
 	main.cpp
 	Object.cpp
 	Object.hpp
+	Options.cpp
+	Options.hpp
 	SvgFontManager.cpp
 	SvgFontManager.hpp
 	ConvertManager.hpp

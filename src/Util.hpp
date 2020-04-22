@@ -9,11 +9,16 @@
 #include <sapi/var.hpp>
 #include <sapi/fs.hpp>
 #include "ApplicationPrinter.hpp"
+#include "Options.hpp"
 
 class Util : public ApplicationPrinter {
 public:
 
 	using IsDetails = arg::Argument<bool, struct UtilIsDetailsTag>;
+
+
+	static void show(const Options& options);
+	static bool convert(const Options& options);
 
 	static void show_icon_file(
 			File::SourcePath input_file,
@@ -44,6 +49,8 @@ public:
 
 private:
 	static void filter(Bitmap & bitmap);
+
+	static void convert_json_to_bmp(const Options& options);
 
 
 };

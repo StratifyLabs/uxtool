@@ -160,7 +160,7 @@ Bitmap PreviewManager::generate_icon_preview(
 
 	IconFontInfo icon_font_info(icon_path);
 
-	icon_font_info.create_font();
+	icon_font_info.create_icon_font();
 
 
 	Bitmap canvas(
@@ -279,7 +279,7 @@ void PreviewManager::generate_theme_preview(
 			Bmp::save(
 						"tmp/" + label + ".bmp",
 						canvas,
-						theme.palette(official_style, official_state)
+						theme.read_palette(official_style, official_state)
 						);
 
 		}

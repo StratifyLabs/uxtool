@@ -5,6 +5,156 @@
 #include <sapi/fs.hpp>
 #include "Util.hpp"
 
+
+bool Util::convert(const Options& options){
+	if( options.is_json_printer() && (options.input_suffix() == "json") ){
+		printer().debug("converting JSON to BMP");
+		convert_json_to_bmp(options);
+		return true;
+	}
+
+	PRINTER_TRACE(
+				printer(),
+				String().format(
+					"not converting using UTIL from JSON printer input (%d %d)",
+					options.is_json_printer(),
+					options.input_suffix() == "json"
+					)
+				);
+	return false;
+}
+
+void Util::show(const Options& options){
+	printer().message("action=show");
+
+	if( options.input_suffix() == "svic" ){
+		printer().message(
+					"Show icon file %s with canvas size %d",
+					options.input().cstring(),
+					options.point_size().to_integer()
+					);
+
+		if( options.output().is_empty() == false ){
+			if( options.output_suffix() != "bmp" ){
+				Ap::printer().error(
+							"output must be a .bmp file"
+							);
+			}
+		}
+
+		show_icon_file(
+					File::SourcePath(options.input()),
+					File::DestinationPath(options.output()),
+					options.point_size().to_integer(),
+					options.downsample_size().to_integer(),
+					options.bits_per_pixel().to_integer()
+					);
+	} else if( options.input_suffix() == "sbi" ){
+
+		Ap::printer().message("show icon font " + options.input());
+		show_icon_font(
+					File::SourcePath(options.input()),
+					File::DestinationPath(options.output()),
+					Bitmap::BitsPerPixel(options.bits_per_pixel().to_integer()),
+					Util::IsDetails(options.is_details())
+					);
+
+	} else {
+		printer().message(
+					"Show font file %s with details %d",
+					options.input().cstring(),
+					options.is_details()
+					);
+		show_file_font(
+					File::SourcePath(options.input()),
+					File::DestinationPath(options.output()),
+					Bitmap::BitsPerPixel(options.bits_per_pixel().to_integer()),
+					Util::IsDetails(options.is_details())
+					);
+	}
+	exit(0);
+}
+
+void Util::convert_json_to_bmp(const Options& options){
+	JsonObject image = JsonDocument().load(
+				JsonDocument::FilePath(options.input())
+				);
+
+	if( image.is_empty() ){
+		printer().error("failed to load JSON object from " + options.input());
+		return;
+	}
+
+
+	StringList keys = image.keys();
+	if( keys.find("line-0000") == keys.count() ){
+		printer().error("JSON object does not contain a printer image");
+		return;
+	}
+
+	var::Vector<String> line_list;
+
+	for(u32 i=0; i < keys.count(); i++){
+		String key = String::number(i, "line-%04d");
+		if( image.at(key).is_string() ){
+			line_list.push_back( image.at(key).to_string() );
+		}
+	}
+
+	int height = line_list.count();
+	if( height <= 0 ){
+		printer().error("Image has zero height");
+		return;
+	}
+
+	int width = line_list.at(0).length() - 2;
+
+	if( width <= 1 ){
+		printer().error("Image has zero width");
+		return;
+	}
+
+	Bitmap bitmap(
+				Area(width, height),
+				Bitmap::BitsPerPixel(options.bits_per_pixel().to_integer())
+				);
+
+	for(int h = 0; h < height; h++){
+		for(int w =	0; w < width; w++){
+			const String& line = line_list.at(h);
+			char pixel_value = ' ';
+			if( line.length() > w+1 ){
+				pixel_value = line_list.at(h).at(w+1);
+			}
+			bitmap << Pen().set_color(
+									Printer::get_bitmap_pixel_color(
+										pixel_value,
+										options.bits_per_pixel().to_integer()
+										)
+									);
+			bitmap.draw_pixel(Point(w,h));
+		}
+	}
+
+	String output = options.output_file_path() + ".bmp";
+
+
+	printer().info("creating " + output);
+	printer() << bitmap;
+	if( Bmp::save(
+				output,
+				bitmap,
+				Palette()
+				.set_color_count(Palette::color_count_1bpp)
+				.set_pixel_format(Palette::pixel_format_rgb888)
+				.assign_color(0, PaletteColor("#ffffff"))
+				.assign_color(1, PaletteColor("#671d86"))
+				) < 0 ){
+		printer().error("failed to save image to " + output);
+	}
+}
+
+
 void Util::filter(
 		Bitmap & bitmap
 		){
@@ -54,9 +204,9 @@ void Util::show_icon_file(
 	}
 
 	if( icon_file.open(
-			 input_file.argument(),
-			 OpenFlags::read_only()
-			 ) < 0 ){
+				input_file.argument(),
+				OpenFlags::read_only()
+				) < 0 ){
 		printf("failed to open vector icon file\n");
 		return;
 	}
@@ -195,9 +345,9 @@ void Util::show_file_font(
 		File f;
 
 		if( f.open(
-				 input_file.argument(),
-				 OpenFlags::read_only()
-				 ) < 0 ){
+					input_file.argument(),
+					OpenFlags::read_only()
+					) < 0 ){
 			Ap::printer().error(
 						"Failed to open file '%s'",
 						input_file.argument().cstring()
@@ -226,7 +376,7 @@ void Util::show_file_font(
 		}
 
 
-		Vector<sg_font_kerning_pair_t> kerning_pairs;
+		var::Vector<sg_font_kerning_pair_t> kerning_pairs;
 		for(u32 i=0; i < header.kerning_pair_count; i++){
 			sg_font_kerning_pair_t pair;
 			if( f.read(pair) != sizeof(sg_font_kerning_pair_t) ){
@@ -240,9 +390,9 @@ void Util::show_file_font(
 			Ap::printer().open_array("kerning pairs");
 			for(u32 i=0; i < kerning_pairs.count(); i++){
 				Ap::printer().key("kerning", "%d %d %d",
-										kerning_pairs.at(i).unicode_first,
-										kerning_pairs.at(i).unicode_second,
-										kerning_pairs.at(i).horizontal_kerning);
+													kerning_pairs.at(i).unicode_first,
+													kerning_pairs.at(i).unicode_second,
+													kerning_pairs.at(i).horizontal_kerning);
 
 			}
 			Ap::printer().close_array();
@@ -250,7 +400,7 @@ void Util::show_file_font(
 			Ap::printer().info("no kerning pairs present");
 		}
 
-		Vector<sg_font_char_t> characters;
+		var::Vector<sg_font_char_t> characters;
 		for(u32 i=0; i < header.character_count; i++){
 			sg_font_char_t character;
 			printer().debug("read character from %d", f.seek(0, File::CURRENT));
@@ -270,15 +420,15 @@ void Util::show_file_font(
 		Ap::printer().open_object("characters");
 		for(u32 i=0; i < characters.count(); i++){
 			Ap::printer().key(String().format("%d", characters.at(i).id), "canvas %d->%d,%d %dx%d advancex->%d offset->%d,%d",
-									characters.at(i).canvas_idx,
-									characters.at(i).canvas_x,
-									characters.at(i).canvas_y,
-									characters.at(i).width,
-									characters.at(i).height,
-									characters.at(i).canvas_x,
-									characters.at(i).advance_x,
-									characters.at(i).offset_x,
-									characters.at(i).offset_y);
+												characters.at(i).canvas_idx,
+												characters.at(i).canvas_x,
+												characters.at(i).canvas_y,
+												characters.at(i).width,
+												characters.at(i).height,
+												characters.at(i).canvas_x,
+												characters.at(i).advance_x,
+												characters.at(i).offset_x,
+												characters.at(i).offset_y);
 
 		}
 		Ap::printer().close_array();
@@ -394,9 +544,9 @@ void Util::show_font(
 
 	Ap::printer().info(
 				"Alloc bitmap %d x %d with %d bpp",
-							 f.get_width(),
-							 f.get_height(),
-							 bpp.argument()
+				f.get_width(),
+				f.get_height(),
+				bpp.argument()
 				);
 
 	b.allocate(

@@ -5,6 +5,7 @@
 #include <sapi/var.hpp>
 #include <sapi/sgfx.hpp>
 
+#include "Options.hpp"
 #include "ApplicationPrinter.hpp"
 
 class ThemeFlags : public ApplicationPrinter {
@@ -85,6 +86,8 @@ private:
 class ThemeManager : public ThemeFlags {
 public:
 	ThemeManager();
+
+	bool convert(const Options& options);
 
 	/*! \details Imports a theme from a JSON file.
 		*

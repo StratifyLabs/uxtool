@@ -1,6 +1,7 @@
 #ifndef BMPFONTGENERATOR_HPP
 #define BMPFONTGENERATOR_HPP
 
+#include "Options.hpp"
 #include "Object.hpp"
 
 class BmpFontGeneratorCharacter {
@@ -45,6 +46,8 @@ private:
 class BmpFontGenerator : public Object {
 public:
 	BmpFontGenerator();
+
+	bool convert(const Options& options);
 
 	void set_map_output_file(const String & path){
 		m_map_output_file = path;

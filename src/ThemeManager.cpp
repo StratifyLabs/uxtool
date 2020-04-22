@@ -35,6 +35,7 @@ ThemeColors::ThemeColors(
 	}
 }
 
+
 ThemeColors ThemeColors::highlight() const {
 	ThemeColors result(*this);
 	result.m_background = m_background;
@@ -121,6 +122,20 @@ PaletteColor ThemeColors::calculate_disabled(
 
 ThemeManager::ThemeManager() : m_theme(m_theme_file){
 
+}
+
+bool ThemeManager::convert(const Options& options){
+	if( options.input_suffix() == "json" ){
+		//map file input
+		if( options.is_theme() ){
+			import(
+						File::SourcePath(options.input()),
+						File::DestinationPath(options.output())
+						);
+			return true;
+		}
+	}
+	return false;
 }
 
 var::Vector<var::String> ThemeManager::get_styles() const {
@@ -360,13 +375,11 @@ void ThemeManager::set_color(
 	}
 	printer().close_array();
 
-
 	m_theme.write_palette(
 				style,
 				state,
-				palette.colors()
+				palette
 				);
-
 }
 
 

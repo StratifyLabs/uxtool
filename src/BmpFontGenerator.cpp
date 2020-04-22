@@ -4,6 +4,21 @@ BmpFontGenerator::BmpFontGenerator(){
 	m_is_ascii = false;
 }
 
+bool BmpFontGenerator::convert(const Options& options){
+	printer().message("generating sbf font from map file");
+	if( import_map(options.input()) == 0 ){
+
+		String output = options.output();
+		if( File::get_info(output).is_directory() ){
+			output << "/" << FileInfo::base_name(options.input());
+		}
+
+		generate_font_file(output);
+		return true;
+	}
+	return false;
+}
+
 int BmpFontGenerator::generate_font_file(const String & destination){
 	File font_file;
 	u32 max_character_width = 0;
@@ -66,8 +81,13 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 	header.character_count = character_list().count();
 	header.kerning_pair_count = kerning_pair_list().count();
 	header.size = sizeof(header) + header.character_count*sizeof(sg_font_char_t) + header.kerning_pair_count*sizeof(sg_font_kerning_pair_t);
-	header.canvas_width = header.max_word_width*2*32;
-	header.canvas_height = header.max_height*3/2;
+	if( header.max_word_width > 2 ){
+		header.canvas_width = header.max_word_width*32;
+		header.canvas_height = header.max_height;
+	} else {
+		header.canvas_width = header.max_word_width*2*32;
+		header.canvas_height = header.max_height*3/2;
+	}
 	
 	var::Vector<Bitmap> master_canvas_list = build_master_canvas(header);
 	if( master_canvas_list.count() == 0 ){

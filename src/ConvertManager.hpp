@@ -4,10 +4,13 @@
 #include "Object.hpp"
 #include "BmpFontGenerator.hpp"
 #include "IconGenerator.hpp"
+#include "Options.hpp"
 
 class ConvertManager : public Object {
 public:
 	ConvertManager();
+
+	bool convert(const Options & options);
 
 	int process_font(
 			File::SourcePath source_file_path,

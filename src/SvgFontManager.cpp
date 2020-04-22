@@ -26,7 +26,7 @@ int SvgFontManager::process_icons(
 
 
 	printer().open_object("svg.icons");
-	Vector<String> input_files;
+	var::Vector<String> input_files;
 	String output_file_path;
 	{
 		String input_base_name;
@@ -966,7 +966,7 @@ var::Vector<var::Vector<FillPoint>> SvgFontManager::group_fill_point_candidates(
 	}
 
 	for(int group = 0; group < group_count; group++){
-		Vector<FillPoint> group_list;
+		var::Vector<FillPoint> group_list;
 		for(const auto & fill_point: fill_points){
 			if( fill_point.group() == group ){
 				group_list.push_back(fill_point);
@@ -1172,14 +1172,14 @@ var::Vector<Point> SvgFontManager::find_all_fill_points(
 				);
 
 	PRINTER_TRACE(printer(), "group candidates");
-	var::Vector<Vector<FillPoint>> grouped_candidates
+	var::Vector<var::Vector<FillPoint>> grouped_candidates
 			= group_fill_point_candidates(
 				bitmap,
 				candidates
 				);
 
 	PRINTER_TRACE(printer(), "group negative candidates");
-	var::Vector<Vector<FillPoint>> negative_grouped_candidates
+	var::Vector<var::Vector<FillPoint>> negative_grouped_candidates
 			= group_fill_point_candidates(
 				bitmap,
 				negative_candidates
