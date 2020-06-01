@@ -238,9 +238,13 @@ int ConvertManager::generate_character_bitmap(u16 unicode){
 
 	if( (unicode & 0xff) == unicode ){
 		u8 byte = unicode;
-		unicode_text.write(byte);
+		unicode_text.write(
+					Reference(byte)
+					);
 	} else {
-		unicode_text.write(unicode);
+		unicode_text.write(
+					Reference(unicode)
+					);
 	}
 	unicode_text.close();
 

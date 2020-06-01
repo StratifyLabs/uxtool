@@ -7,11 +7,12 @@ ThemeColors::ThemeColors(
 		const PaletteColor & background_color
 		){
 
+	set_name(name);
 	set_background(background_color);
 
-	m_is_outline = false;
+	set_outline(false);
 	if( name.find("outline") != String::npos ){
-		m_is_outline = true;
+		set_outline(true);
 		set_border(
 					PaletteColor(object.at("color").to_string())
 					);
@@ -46,7 +47,13 @@ ThemeColors ThemeColors::highlight() const {
 ThemeColors ThemeColors::disable() const {
 	ThemeColors result(*this);
 	result.m_background = m_background;
-	result.m_color = calculate_disabled(m_color);
+
+	if( is_outline() ){
+		result.m_text = calculate_disabled(m_text);
+	} else {
+		result.m_color = calculate_disabled(m_color);
+	}
+
 	return result;
 }
 
@@ -111,13 +118,23 @@ Palette ThemeColors::create_palette(
 PaletteColor ThemeColors::calculate_highlighted(
 		const PaletteColor& color
 		) const{
-	return color * 0.75f;
+	return color * 0.5f;
 }
 
 PaletteColor ThemeColors::calculate_disabled(
 		const PaletteColor & color
 		) const{
-	return color * 1.75f;
+	u8 brightness = color.get_brightness();
+	if( brightness == 0 ){
+		brightness = 10;
+	}
+	u8 brightness_inverted = 255 - brightness;
+
+	float ratio = brightness_inverted*1.0f / brightness;
+	if( ratio < 2.0f ){
+		ratio = 2.0f;
+	}
+	return color * ratio;
 }
 
 ThemeManager::ThemeManager() : m_theme(m_theme_file){
@@ -160,15 +177,15 @@ var::Vector<var::String> ThemeManager::get_styles() const {
 	return result;
 }
 
-var::String ThemeManager::get_style_name(enum Theme::style value){
+var::String ThemeManager::get_style_name(enum Theme::styles value){
 	return Theme::get_style_name(value);
 }
 
-var::String ThemeManager::get_state_name(enum Theme::state value){
+var::String ThemeManager::get_state_name(enum Theme::states value){
 	return Theme::get_state_name(value);
 }
 
-enum sgfx::Theme::style ThemeManager::get_theme_style(const var::String & style_name){
+enum sgfx::Theme::styles ThemeManager::get_theme_style(const var::String & style_name){
 	if( style_name == "dark" ){ return sgfx::Theme::style_dark; }
 	if( style_name == "light" ){ return sgfx::Theme::style_light; }
 	if( style_name == "brandPrimary" ){ return sgfx::Theme::style_brand_primary; }
@@ -352,8 +369,8 @@ int ThemeManager::import_object(
 }
 
 void ThemeManager::set_color(
-		enum Theme::style style,
-		enum Theme::state state,
+		Theme::styles style,
+		Theme::states state,
 		const ThemeColors & base_colors,
 		const String & pixel_format,
 		u8 bits_per_pixel){

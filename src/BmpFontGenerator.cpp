@@ -95,7 +95,7 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 	}
 	
 	for(u32 i=0; i < master_canvas_list.count(); i++){
-		printer().open_object(String().format("master canvas %d", i), Printer::DEBUG);
+		printer().open_object(String().format("master canvas %d", i), Printer::level_debug);
 		printer() << master_canvas_list.at(i);
 		printer().close_object();
 	}
@@ -114,7 +114,9 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 				font_file.location(),
 				sizeof(header)
 				);
-	if( is_destination_valid && font_file.write(header) != sizeof(header) ){
+	if( is_destination_valid && font_file.write(
+				Reference(header)
+				) != sizeof(header) ){
 		printer().error(
 					"failed to write header to file (%d, %d)",
 					font_file.return_value(),
@@ -128,7 +130,7 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 				font_file.location()
 				);
 	
-	printer().open_array("kerning pairs", Printer::DEBUG);
+	printer().open_array("kerning pairs", Printer::level_debug);
 	
 	for(u32 i = 0; i < kerning_pair_list().count(); i++){
 		Data kerning_pair;
@@ -137,7 +139,9 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 										kerning_pair_list().at(i).unicode_first,
 										kerning_pair_list().at(i).unicode_second,
 										kerning_pair_list().at(i).horizontal_kerning);
-		if( is_destination_valid && font_file.write(kerning_pair_list().at(i)) != sizeof(sg_font_kerning_pair_t) ){
+		if( is_destination_valid && font_file.write(
+					Reference(kerning_pair_list().at(i))
+					) != sizeof(sg_font_kerning_pair_t) ){
 			printer().error(
 						"failed to write kerning pair (%d,%d)",
 						font_file.return_value(),
@@ -169,10 +173,10 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 										character_list().at(j).font_character().canvas_y,
 										character_list().at(j).font_character().width,
 										character_list().at(j).font_character().height,
-										font_file.seek(0, File::CURRENT));
+										font_file.seek(0, File::whence_current));
 		if( is_destination_valid &&
 				font_file.write(
-					character_list().at(j).font_character()
+					Reference(character_list().at(j).font_character())
 					) != sizeof(sg_font_char_t) ){
 			printer().error("failed to write kerning pair");
 			return -1;
@@ -193,7 +197,7 @@ int BmpFontGenerator::generate_font_file(const String & destination){
 		printer().debug("write master canvas %d (%d) to file at %d",
 										i,
 										master_canvas_list.at(i).size(),
-										font_file.seek(0, File::CURRENT)
+										font_file.seek(0, File::whence_current)
 										);
 		if( is_destination_valid &&
 				font_file.write(

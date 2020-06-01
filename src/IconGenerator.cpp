@@ -71,7 +71,7 @@ int IconGenerator::generate_icon_file(const String & destination){
 
 	printer().debug("show canvas");
 	for(u32 i=0; i < master_canvas_list.count(); i++){
-		printer().open_object(String().format("master canvas %d", i), Printer::DEBUG);
+		printer().open_object(String().format("master canvas %d", i), Printer::level_debug);
 		printer() << master_canvas_list.at(i);
 		printer().close_object();
 	}
@@ -83,7 +83,9 @@ int IconGenerator::generate_icon_file(const String & destination){
 				font_file.location(),
 				sizeof(header)
 				);
-	if( is_destination_valid && font_file.write(header) != sizeof(header) ){
+	if( is_destination_valid && font_file.write(
+				Reference(header)
+				) != sizeof(header) ){
 		printer().error(
 					"failed to write header to file (%d, %d)",
 					font_file.return_value(),
@@ -113,10 +115,10 @@ int IconGenerator::generate_icon_file(const String & destination){
 										icon.icon().canvas_y,
 										icon.icon().width,
 										icon.icon().height,
-										font_file.seek(0, File::CURRENT));
+										font_file.seek(0, File::whence_current));
 		if( is_destination_valid &&
 				font_file.write(
-					icon.icon()
+					Reference(icon.icon())
 					) != sizeof(sg_font_icon_t) ){
 			printer().error("failed to write kerning pair");
 			return -1;
@@ -137,7 +139,7 @@ int IconGenerator::generate_icon_file(const String & destination){
 		printer().debug("write master canvas %d (%d) to file at %d",
 										i,
 										master_canvas_list.at(i).size(),
-										font_file.seek(0, File::CURRENT)
+										font_file.seek(0, File::whence_current)
 										);
 		if( is_destination_valid &&
 				font_file.write(

@@ -163,7 +163,7 @@ int SvgFontManager::process_svg_icon(
 		){
 
 	printer().open_object("svg.convert");
-	printer().open_object("json", sys::Printer::DEBUG);
+	printer().open_object("json", sys::Printer::level_debug);
 	{
 		printer() << object;
 		printer().close_object();
@@ -225,8 +225,8 @@ int SvgFontManager::process_svg_icon(
 	printer().open_object(
 				"canvas",
 				canvas.area().width() > 128 ?
-					Printer::DEBUG :
-					Printer::INFO
+					Printer::level_debug :
+					Printer::level_info
 					);
 	printer() << canvas;
 	printer().close_object();
@@ -685,14 +685,14 @@ void SvgFontManager::fit_icon_to_canvas(
 	Point bitmap_shift;
 	float width_scale, height_scale;
 
-	printer().open_object("fit icon to canvas", Printer::MESSAGE);
+	printer().open_object("fit icon to canvas", Printer::level_message);
 	printer() << bitmap;
 
 	printer().open_object("active region");
 	printer() << active_region;
 	printer().close_object();
 
-	printer().open_object("calculate offset error", Printer::DEBUG);
+	printer().open_object("calculate offset error", Printer::level_debug);
 	printer() << bitmap.area();
 
 	bitmap_shift = Point(
@@ -727,7 +727,7 @@ void SvgFontManager::fit_icon_to_canvas(
 				shift_y
 				);
 
-	printer().open_object("vector transformation", Printer::MESSAGE);
+	printer().open_object("vector transformation", Printer::level_message);
 	printer().key("scale", "%0.2fx%0.2f", width_scale, height_scale);
 	printer() << map_shift;
 	printer().close_object();
@@ -908,9 +908,9 @@ var::Vector<FillPoint> SvgFontManager::find_fill_point_candidates(
 	}
 
 	if( is_negative_fill ){
-		printer().open_object("negative fill analysis", sys::Printer::DEBUG);
+		printer().open_object("negative fill analysis", sys::Printer::level_debug);
 	} else {
-		printer().open_object("fill analysis", sys::Printer::DEBUG);
+		printer().open_object("fill analysis", sys::Printer::level_debug);
 	}
 	printer() << debug_bitmap;
 	printer().close_object();
@@ -950,7 +950,7 @@ var::Vector<var::Vector<FillPoint>> SvgFontManager::group_fill_point_candidates(
 							fill_point.point().x(),
 							fill_point.point().y()
 							),
-						sys::Printer::DEBUG
+						sys::Printer::level_debug
 						);
 			printer() << fill_bitmap;
 			printer().close_object();
@@ -1403,7 +1403,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::convert_svg_path(
 
 		vector_path << elements << canvas.get_viewable_region();
 		canvas.clear();
-		printer().open_object("vector path", Printer::DEBUG) << vector_path;
+		printer().open_object("vector path", Printer::level_debug) << vector_path;
 		printer().close_object();
 		canvas.set_pen( Pen().set_color(0xffffffff) );
 		sgfx::Vector::draw(canvas, vector_path, map);
@@ -1512,7 +1512,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'm':
 				//ret = parse_path_moveto_relative(d+i);
@@ -1526,7 +1526,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'L':
 				//ret = parse_path_lineto_absolute(d+i);
@@ -1540,7 +1540,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'l':
 				//ret = parse_path_lineto_relative(d+i);
@@ -1555,7 +1555,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'H':
 				//ret = parse_path_horizontal_lineto_absolute(d+i);
@@ -1569,7 +1569,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'h':
 				//ret = parse_path_horizontal_lineto_relative(d+i);
@@ -1583,7 +1583,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'V':
 				//ret = parse_path_vertical_lineto_absolute(d+i);
@@ -1597,7 +1597,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("command", JsonInteger(command_char));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'v':
 				//ret = parse_path_vertical_lineto_relative(d+i);
@@ -1611,7 +1611,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("command", JsonInteger(command_char));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'C':
 				//ret = parse_path_cubic_bezier_absolute(d+i);
@@ -1639,7 +1639,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y2", JsonReal( y2 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'c':
 				//ret = parse_path_cubic_bezier_relative(d+i);
@@ -1666,7 +1666,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y2", JsonReal( y2 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 
 			case 'S':
@@ -1693,7 +1693,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y2", JsonReal( y2 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 's':
 				//ret = parse_path_cubic_bezier_short_relative(d+i);
@@ -1721,7 +1721,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y2", JsonReal( y2 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'Q':
 				//ret = parse_path_quadratic_bezier_absolute(d+i);
@@ -1743,7 +1743,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y1", JsonReal( y1 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'q':
 				//ret = parse_path_quadratic_bezier_relative(d+i);
@@ -1765,7 +1765,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("y1", JsonReal( y1 ));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 'T':
 				//ret = parse_path_quadratic_bezier_short_absolute(d+i);
@@ -1783,7 +1783,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			case 't':
 				//ret = parse_path_quadratic_bezier_short_relative(d+i);
@@ -1803,7 +1803,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 				object.insert("command", JsonInteger(command_char));
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 
 			case 'A':
@@ -1825,7 +1825,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 
 
 				break;
@@ -1848,7 +1848,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("x", JsonReal( x ));
 				object.insert("y", JsonReal( y ));
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 
 			case 'Z':
@@ -1861,7 +1861,7 @@ var::Vector<sg_vector_path_description_t> SvgFontManager::process_svg_path(
 
 				object.insert("command", JsonInteger(command_char));
 				i++;
-				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::COMPACT).stringify(object).cstring());
+				printer().debug("%c: %s", command_char, JsonDocument().set_flags(JsonDocument::option_compact).stringify(object).cstring());
 				break;
 			default:
 				printer().message("Unhandled command char %c", command_char);

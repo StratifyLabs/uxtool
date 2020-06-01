@@ -27,41 +27,6 @@ public:
 			const PaletteColor & background_color
 			);
 
-	ThemeColors& set_background(const PaletteColor & value){
-		m_background = value;
-		return *this;
-	}
-
-	ThemeColors& set_color(const PaletteColor & value){
-		m_color = value;
-		return *this;
-	}
-
-	ThemeColors& set_text(const PaletteColor & value){
-		m_text = value;
-		return *this;
-	}
-
-	ThemeColors& set_border(const PaletteColor & value){
-		m_border = value;
-		return *this;
-	}
-
-	const PaletteColor & background() const {
-		return m_background;
-	}
-
-	const PaletteColor & border() const {
-		return m_border;
-	}
-
-	const PaletteColor & color() const {
-		return m_color;
-	}
-
-	const PaletteColor & text() const {
-		return m_text;
-	}
 
 	ThemeColors highlight() const;
 	ThemeColors disable() const;
@@ -71,11 +36,12 @@ public:
 			) const;
 
 private:
-	PaletteColor m_background;
-	PaletteColor m_color;
-	PaletteColor m_text;
-	PaletteColor m_border;
-	bool m_is_outline;
+	API_ACCESS_COMPOUND(ThemeColors,var::String,name);
+	API_ACCESS_COMPOUND(ThemeColors,PaletteColor,background);
+	API_ACCESS_COMPOUND(ThemeColors,PaletteColor,color);
+	API_ACCESS_COMPOUND(ThemeColors,PaletteColor,text);
+	API_ACCESS_COMPOUND(ThemeColors,PaletteColor,border);
+	API_ACCESS_BOOL(ThemeColors,outline,false);
 
 
 	PaletteColor calculate_highlighted(const PaletteColor & color) const;
@@ -126,16 +92,16 @@ private:
 	theme_color_t calculate_disabled(const theme_color_t & color);
 
 	void set_color(
-			enum Theme::style style,
-			enum Theme::state state,
+			enum Theme::styles style,
+			enum Theme::states state,
 			const ThemeColors& base_colors,
 			const String& pixel_format,
 			u8 bits_per_pixel
 			);
 
-	enum sgfx::Theme::style get_theme_style(const var::String & style_name);
-	var::String get_style_name(enum Theme::style value);
-	var::String get_state_name(enum Theme::state value);
+	enum sgfx::Theme::styles get_theme_style(const var::String & style_name);
+	var::String get_style_name(enum Theme::styles value);
+	var::String get_state_name(enum Theme::states value);
 	var::Vector<var::String> get_styles() const;
 	var::Vector<var::String> get_states() const;
 	theme_color_t import_hex_code(const String & hex) const;

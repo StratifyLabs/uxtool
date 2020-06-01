@@ -356,7 +356,9 @@ void Util::show_file_font(
 		}
 
 		sg_font_header_t header;
-		if( f.read(header) != sizeof(sg_font_header_t) ){
+		if( f.read(
+					Reference(header)
+					) != sizeof(sg_font_header_t) ){
 			Ap::printer().error("failed to read header");
 			return;
 		}
@@ -379,7 +381,9 @@ void Util::show_file_font(
 		var::Vector<sg_font_kerning_pair_t> kerning_pairs;
 		for(u32 i=0; i < header.kerning_pair_count; i++){
 			sg_font_kerning_pair_t pair;
-			if( f.read(pair) != sizeof(sg_font_kerning_pair_t) ){
+			if( f.read(
+						Reference(pair)
+						) != sizeof(sg_font_kerning_pair_t) ){
 				Ap::printer().error("Failed to read kerning pair");
 				return;
 			}
@@ -403,8 +407,10 @@ void Util::show_file_font(
 		var::Vector<sg_font_char_t> characters;
 		for(u32 i=0; i < header.character_count; i++){
 			sg_font_char_t character;
-			printer().debug("read character from %d", f.seek(0, File::CURRENT));
-			if( f.read(character) != sizeof(sg_font_char_t) ){
+			printer().debug("read character from %d", f.seek(0, File::whence_current));
+			if( f.read(
+						Reference(character)
+						) != sizeof(sg_font_char_t) ){
 				Ap::printer().error(
 							"Failed to read character at %d (%d, %d)",
 							i,
@@ -443,7 +449,7 @@ void Util::show_file_font(
 			ascii_characters << c << " ";
 		}
 
-		u32 length = ff.calculate_length(
+		u32 length = ff.get_width(
 					ascii_characters
 					);
 

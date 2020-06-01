@@ -138,7 +138,7 @@ Bitmap PreviewManager::generate_font_preview(
 
 	Bitmap canvas(
 				Area(
-					font_info.font()->calculate_length(characters),
+					font_info.font()->get_width(characters),
 					font_info.font()->get_height() + 4
 					),
 				Bitmap::BitsPerPixel(font_info.font()->bits_per_pixel())
@@ -213,17 +213,17 @@ void PreviewManager::generate_theme_preview(
 		for(u8 state = 0; state < Theme::last_state+1; state++){
 
 
-			enum Theme::style official_style =
-					static_cast<enum Theme::style>(style);
-			enum Theme::state official_state =
-					static_cast<enum Theme::state>(state);
+			enum Theme::styles official_style =
+					static_cast<enum Theme::styles>(style);
+			enum Theme::states official_state =
+					static_cast<enum Theme::states>(state);
 
 			String label =
 					Theme::get_style_name(official_style) + " " +
 					Theme::get_state_name(official_state);
 
 			Area area(
-						font_info.font()->calculate_length(
+						font_info.font()->get_width(
 							label
 							) + 16,
 						font_info.point_size()*3/2
